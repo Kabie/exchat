@@ -1,6 +1,12 @@
-
 import Chat from "./chat"
 
-let c = new Chat()
+let chat = new Chat()
 
-c.connect()
+let chatApp = Elm.fullscreen(Elm.Main, {messages: 'ExChat'})
+
+chat.join("rooms:lobby")
+
+chat.chan.on('msg', payload => {
+  console.log(payload)
+  chatApp.ports.messages.send(payload.msg)
+})
