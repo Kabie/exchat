@@ -58,7 +58,7 @@ exports.config = {
     elmBrunch: {
       // Set to the elm file(s) containing your "main" function
       // `elm make` handles all elm dependencies
-      mainModules: ['web/elm/Main.elm'],
+      mainModules: ['web/elm/Chat.elm'],
       // Defaults to 'js/' folder in paths.public
       outputFolder: 'priv/static/js/'
     }
