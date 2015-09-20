@@ -15,6 +15,8 @@ defmodule Exchat do
       # worker(Exchat.Worker, [arg1, arg2, arg3]),
     ]
 
+    :online_users = :ets.new :online_users, [:public, :named_table]
+
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Exchat.Supervisor]

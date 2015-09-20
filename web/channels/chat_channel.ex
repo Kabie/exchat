@@ -3,10 +3,17 @@ defmodule Exchat.ChatChannel do
 
   def join("rooms:lobby", payload, socket) do
     if authorized?(payload) do
+      send(self, :join)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  def handle_info(:join, socket) do
+    broadcast_from! socket, "user", %{users: [get_user(socket)]}
+    push socket, "user", %{users: all_users}
+    {:noreply, socket}
   end
 
   # Channels can be used in a request/response fashion
@@ -17,8 +24,8 @@ defmodule Exchat.ChatChannel do
 
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (rooms:lobby).
-  def handle_in("say", payload, socket) do
-    broadcast socket, "say", payload
+  def handle_in("say", %{"msg" => msg}, socket) do
+    broadcast socket, "say", %{uid: socket.assigns.uid, msg: msg}
     {:noreply, socket}
   end
 
@@ -30,8 +37,36 @@ defmodule Exchat.ChatChannel do
     {:noreply, socket}
   end
 
+  def terminate({:shutdown, reason} = event, socket) do
+    broadcast_from socket, "user", %{users: [offline(socket)]}
+    event
+  end
+
   # Add authorization logic here as required.
   defp authorized?(_payload) do
     true
+  end
+
+  defp get_user(socket) do
+    uid = socket.assigns.uid
+    case :ets.lookup(:online_users, uid) do
+      [] ->
+        user = %{uid: uid, name: "user_#{uid}", on: true}
+        true = :ets.insert :online_users, {uid, user}
+        user
+      [{_uid, user}] -> %{user | on: true}
+    end
+  end
+
+  defp offline(socket) do
+    [{uid, user}] = :ets.lookup(:online_users, socket.assigns.uid)
+    :ets.delete(:online_users, uid)
+    %{user | on: false}
+  end
+
+  defp all_users do
+    :online_users
+    |> :ets.tab2list
+    |> Keyword.values
   end
 end

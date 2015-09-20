@@ -19,8 +19,8 @@ defmodule Exchat.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
-    {:ok, socket}
+  def connect(params, socket) do
+    {:ok, assign(socket, :uid, Base.url_encode64 :crypto.strong_rand_bytes(6))}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
