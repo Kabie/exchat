@@ -257,10 +257,10 @@ inputView client model =
       , autofocus True
       , value model.typing
       , on "input" targetValue (Signal.message client << Typing)
-      , on "keypress" keyCode (\k ->
+      , onKeyPress client (\k ->
         if k == 13
-          then Signal.message client (Say {uid = model.self.uid, msg = model.typing})
-          else Signal.message client CNoOp)
+          then Say {uid = model.self.uid, msg = model.typing}
+          else CNoOp)
       ] []
     ]
 
