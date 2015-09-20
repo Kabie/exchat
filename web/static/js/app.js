@@ -20,22 +20,22 @@ chat.join("rooms:lobby", {}, () => {
   let chatApp = Elm.fullscreen(Elm.Chat, {serverEvents: {event: '', payload: {}}})
 
   chatApp.ports.clientEvents.subscribe(({event, payload}) => {
-    console.log(event, payload)
+    console.debug(event, payload)
     chat.chan.push(event, payload)
   })
 
-  chat.chan.on('say', payload => {
-    console.log(payload)
-    // chatApp.ports.messages.send(payload)
+  chat.chan.on('said', ({uid, msg}) => {
+    console.debug(uid, msg)
+    chatApp.ports.serverEvents.send({event: 'said', payload: {uid, msg}})
   })
 
   chat.chan.on('users', ({users}) => {
-    console.log(users)
+    console.debug(users)
     chatApp.ports.serverEvents.send({event: 'users', payload: users})
   })
 
   chat.chan.on('self', (user) => {
-    console.log(user)
+    console.debug(user)
     chatApp.ports.serverEvents.send({event: 'self', payload: user})
   })
 

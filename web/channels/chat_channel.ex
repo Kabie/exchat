@@ -34,7 +34,7 @@ defmodule Exchat.ChatChannel do
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (rooms:lobby).
   def handle_in("say", %{"msg" => msg}, socket) do
-    broadcast socket, "say", %{uid: socket.assigns.uid, msg: msg}
+    broadcast socket, "said", %{uid: socket.assigns.uid, msg: msg}
     {:noreply, socket}
   end
 
@@ -69,7 +69,7 @@ defmodule Exchat.ChatChannel do
   defp delete_user(uid) do
     [{uid, user}] = :ets.lookup :online_users, uid
     true = :ets.delete(:online_users, uid)
-    %{user | on: false}
+    Map.put_new(user, :on, false) 
   end
 
   defp update_user(uid, user) do
