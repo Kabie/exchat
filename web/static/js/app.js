@@ -6,24 +6,37 @@ class ChatClient {
     this.socket.connect()
   }
 
-  join(channel) {
-    this.chan = this.socket.channel(channel, {})
+  join(channel, params = {}, callback) {
+    this.chan = this.socket.channel(channel, params)
     this.chan.join()
-      .receive("ok", chan => {console.log("Welcome to Exchat!") })
+      .receive("ok", callback)
       .receive("error", chan => {console.error("Channel join error") })
   }
 }
 
 let chat = new ChatClient()
 
-let chatApp = Elm.fullscreen(Elm.Chat, {messages: {msg: ''}})
+chat.join("rooms:lobby", {}, () => {
+  let chatApp = Elm.fullscreen(Elm.Chat, {serverEvents: {event: '', payload: {}}})
 
-chat.join("rooms:lobby")
+  chatApp.ports.clientEvents.subscribe(({event, payload}) => {
+    console.log(event, payload)
+    chat.chan.push(event, payload)
+  })
 
-chatApp.ports.sendMsg.subscribe(msg => {
-  chat.chan.push('say', {msg: msg})
-})
+  chat.chan.on('say', payload => {
+    console.log(payload)
+    // chatApp.ports.messages.send(payload)
+  })
 
-chat.chan.on('say', payload => {
-  chatApp.ports.messages.send(payload)
+  chat.chan.on('users', ({users}) => {
+    console.log(users)
+    chatApp.ports.serverEvents.send({event: 'users', payload: users})
+  })
+
+  chat.chan.on('self', (user) => {
+    console.log(user)
+    chatApp.ports.serverEvents.send({event: 'self', payload: user})
+  })
+
 })

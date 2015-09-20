@@ -11,8 +11,10 @@ defmodule Exchat.ChatChannel do
   end
 
   def handle_info(:join, socket) do
-    broadcast_from! socket, "user", %{users: [get_user(socket)]}
-    push socket, "user", %{users: all_users}
+    user = get_user(socket.assigns.uid)
+    broadcast_from! socket, "users", %{users: [user]}
+    push socket, "self", user
+    push socket, "users", %{users: all_users}
     {:noreply, socket}
   end
 
@@ -20,6 +22,13 @@ defmodule Exchat.ChatChannel do
   # by sending replies to requests from the client
   def handle_in("ping", payload, socket) do
     {:reply, {:ok, payload}, socket}
+  end
+
+  def handle_in("self", %{"uid" => uid} = user, socket) do
+    new_self = update_user(uid, user)
+    push socket, "self", new_self
+    broadcast socket, "users", %{users: [new_self]}
+    {:noreply, socket}
   end
 
   # It is also common to receive messages from the client and
@@ -38,7 +47,7 @@ defmodule Exchat.ChatChannel do
   end
 
   def terminate({:shutdown, reason} = event, socket) do
-    broadcast_from socket, "user", %{users: [offline(socket)]}
+    broadcast_from socket, "users", %{users: [delete_user(socket.assigns.uid)]}
     event
   end
 
@@ -47,8 +56,7 @@ defmodule Exchat.ChatChannel do
     true
   end
 
-  defp get_user(socket) do
-    uid = socket.assigns.uid
+  defp get_user(uid) do
     case :ets.lookup(:online_users, uid) do
       [] ->
         user = %{uid: uid, name: "user_#{uid}", on: true}
@@ -58,10 +66,15 @@ defmodule Exchat.ChatChannel do
     end
   end
 
-  defp offline(socket) do
-    [{uid, user}] = :ets.lookup(:online_users, socket.assigns.uid)
-    :ets.delete(:online_users, uid)
+  defp delete_user(uid) do
+    [{uid, user}] = :ets.lookup :online_users, uid
+    true = :ets.delete(:online_users, uid)
     %{user | on: false}
+  end
+
+  defp update_user(uid, user) do
+    true = :ets.update_element :online_users, uid, {2, user}
+    user
   end
 
   defp all_users do
