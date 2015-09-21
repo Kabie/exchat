@@ -13,7 +13,7 @@ use Mix.Config
 # which you typically run after static files are built.
 config :exchat, Exchat.Endpoint,
   http: [port: System.get_env("PORT")],
-  url: [scheme: "https", host: "stark-dusk-3556.heroku.com", port: 443],
+  url: [scheme: "https", host: "rocky-mesa-1371.herokuapp.com", port: 443],
   force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
