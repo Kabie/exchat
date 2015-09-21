@@ -1,0 +1,7 @@
+{
+    "name": "Chat in Elm",
+    "env": {
+        "ELM_COMPILE": "echo 'skip'"
+    },
+    "buildpacks": []
+}
