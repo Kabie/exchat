@@ -1,7 +1,7 @@
 {
     "name": "Chat in Elm",
     "env": {
-        "ELM_COMPILE": "echo `pwd`; elm-make 'web/elm/Chat.elm' --output 'priv/static/js/chat.js'"
+        "ELM_COMPILE": "pwd"
     },
     "buildpacks": []
 }
