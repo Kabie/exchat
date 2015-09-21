@@ -19,7 +19,7 @@ defmodule Exchat.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(params, socket) do
+  def connect(_params, socket) do
     {:ok, assign(socket, :uid, Base.url_encode64 :crypto.strong_rand_bytes(6))}
   end
 
